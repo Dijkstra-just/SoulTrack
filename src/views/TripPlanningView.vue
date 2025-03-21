@@ -20,9 +20,9 @@
 </template>
 
 <script setup lang="ts">
-import GdMap from '../components/GdMap.vue'
-import TripCard from '../components/TripCard.vue'
-import TripInfo from '../components/TripInfo.vue'
+import GdMap from '../components/tripplan/GdMap.vue'
+import TripCard from '../components/tripplan/TripCard.vue'
+import TripInfo from '../components/tripplan/TripInfo.vue'
 // import { useTripStore } from '../stores/tripStore'
 
 // 使用trip store
@@ -52,7 +52,7 @@ const handleAddButtonClick = () => {
   margin-right: 5px;
   background-color: var(--card-bg);
   border-radius: 8px;
-  padding: 15px;
+  padding: 0px;
   box-shadow: var(--card-shadow);
   overflow-y: auto;
   transition:
@@ -64,7 +64,7 @@ const handleAddButtonClick = () => {
   width: 30%;
   background-color: var(--card-bg);
   border-radius: 8px;
-  padding: 15px;
+  padding: 5px;
   box-shadow: var(--card-shadow);
   overflow-y: auto;
   transition:
