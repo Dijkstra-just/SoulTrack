@@ -16,6 +16,7 @@
     <button class="floating-add-button" @click="handleAddButtonClick">
       <span class="plus-icon">+</span>
     </button>
+    <coze />
   </div>
 </template>
 
@@ -23,6 +24,7 @@
 import GdMap from '../components/tripplan/GdMap.vue'
 import TripCard from '../components/tripplan/TripCard.vue'
 import TripInfo from '../components/tripplan/TripInfo.vue'
+import coze from '../components/ai/coze.vue'
 // import { useTripStore } from '../stores/tripStore'
 
 // 使用trip store
@@ -39,8 +41,7 @@ const handleAddButtonClick = () => {
 .trip-planning-view {
   display: flex;
   flex-direction: row;
-  height: calc(100vh - 80px);
-  margin-top: 45px;
+  height: calc(100vh - 85px);
   position: relative; /* 添加相对定位，作为悬浮按钮的参考 */
   background-color: var(--bg-color);
   color: var(--text-color);

@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import FormMessage from '../components/forum/FormMessage.vue'
 </script>
 
 <template>
   <div class="forum-view">
-    <h1>Hello from Forum</h1>
-    <p>This will be the forum page with card-style posts for finding travel companions and rating scenic spots.</p>
+    <FormMessage />
   </div>
 </template>
 
 <style scoped>
 .forum-view {
-  padding: 20px;
+  /* padding: 20px; */
   text-align: center;
 }
-</style> 
+</style>

@@ -13,7 +13,7 @@ import NavBar from './components/NavBar.vue'
 
 <style scoped>
 main {
-  padding-top: 30px; /* 为固定定位的导航栏留出空间 */
-  min-height: 100vh;
+  margin-top: 75px; /* 为固定定位的导航栏留出空间 */
+  min-height: calc(100vh - 80px);
 }
 </style>

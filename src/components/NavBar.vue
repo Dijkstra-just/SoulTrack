@@ -90,12 +90,44 @@
           </router-link>
         </div>
 
-        <div class="avatar-container" @click="isLoggedIn = !isLoggedIn">
-          <img
-            :src="isLoggedIn ? '/user/jhd.jpg' : '/path/to/default-avatar.jpg'"
-            alt="用户头像"
-            class="avatar-img"
-          />
+        <div class="relative">
+          <div
+            class="avatar-container"
+            @click="
+              isLoggedIn ? (showUserMenu = !showUserMenu) : (showLoginModal = !showLoginModal)
+            "
+          >
+            <img
+              :src="isLoggedIn ? '/user/jhd.jpg' : '/path/to/default-avatar.jpg'"
+              alt="用户头像"
+              class="avatar-img"
+            />
+          </div>
+
+          <!-- 用户菜单 -->
+          <div v-if="isLoggedIn && showUserMenu" class="user-menu">
+            <div class="user-info">
+              <img src="/user/jhd.jpg" alt="用户头像" class="user-menu-avatar" />
+              <span class="user-name">{{ getUserName() }}</span>
+            </div>
+            <div class="menu-divider"></div>
+            <button class="menu-item" @click="handleLogout">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M16,17V14H9V10H16V7L21,12L16,17M14,2A2,2 0 0,1 16,4V6H14V4H5V20H14V18H16V20A2,2 0 0,1 14,22H5A2,2 0 0,1 3,20V4A2,2 0 0,1 5,2H14Z"
+                />
+              </svg>
+              <span>退出登录</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 登录模态框 -->
+        <div v-if="showLoginModal" class="login-modal-overlay" @click.self="showLoginModal = false">
+          <div class="login-modal">
+            <MyLogin @login-success="handleLoginSuccess" @close="showLoginModal = false" />
+          </div>
         </div>
       </div>
     </div>
@@ -105,12 +137,61 @@
 <script setup lang="ts">
 import { RouterLink, useRouter, useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
+import MyLogin from './login/mylogin.vue'
 
 //双向路由的绑定
 const router = useRouter()
 const route = useRoute()
-const isLoggedIn = ref(true)
-// const showLogin = ref(false)
+const isLoggedIn = ref(false)
+const showLoginModal = ref(false)
+const showUserMenu = ref(false)
+
+// 检查用户是否已登录
+const checkLoginStatus = () => {
+  const token = localStorage.getItem('token')
+  const user = localStorage.getItem('user')
+  if (token && user) {
+    isLoggedIn.value = true
+    return true
+  }
+  return false
+}
+
+// 获取用户名
+const getUserName = () => {
+  const userStr = localStorage.getItem('user')
+  if (userStr) {
+    try {
+      const user = JSON.parse(userStr)
+      return user.username || '用户'
+    } catch (e) {
+      return '用户'
+    }
+  }
+  return '用户'
+}
+
+// 处理登录成功
+const handleLoginSuccess = () => {
+  isLoggedIn.value = true
+  showLoginModal.value = false
+}
+
+// 处理登出
+const handleLogout = () => {
+  // 清除本地存储的用户信息
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+
+  // 更新状态
+  isLoggedIn.value = false
+  showUserMenu.value = false
+
+  // 如果当前在需要登录的页面，跳转到首页
+  if (route.meta.requiresAuth) {
+    router.push('/')
+  }
+}
 
 const toggleRoute = () => {
   if (route.path === '/') {
@@ -129,9 +210,12 @@ const toggleTheme = () => {
 
   // 根据当前状态设置 HTML 的 data-theme 属性
   document.documentElement.setAttribute('data-theme', isDarkTheme.value ? 'dark' : 'light')
+
+  // 保存主题设置到本地存储
+  localStorage.setItem('theme', isDarkTheme.value ? 'dark' : 'light')
 }
 
-// 组件挂载时初始化主题
+// 组件挂载时初始化主题和登录状态
 onMounted(() => {
   // 检查当前系统偏好或本地存储的主题设置
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -154,6 +238,9 @@ onMounted(() => {
       document.documentElement.setAttribute('data-theme', isDarkTheme.value ? 'dark' : 'light')
     }
   })
+
+  // 检查登录状态
+  checkLoginStatus()
 })
 </script>
 
@@ -278,6 +365,104 @@ onMounted(() => {
 
   .nav-link {
     padding: 0.4rem;
+  }
+}
+
+/* 登录模态框样式 */
+.login-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.login-modal {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  max-width: 90%;
+  animation: modal-appear 0.3s ease-out;
+}
+
+/* 用户菜单样式 */
+.user-menu {
+  position: absolute;
+  top: 45px;
+  right: 0;
+  width: 200px;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  animation: menu-appear 0.2s ease-out;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.user-menu-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 0;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.2s;
+  color: var(--text-color);
+}
+
+.menu-item:hover {
+  background-color: var(--hover-bg);
+}
+
+@keyframes modal-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes menu-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>

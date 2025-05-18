@@ -1,16 +1,18 @@
 <script setup lang="ts">
+import DeepSeek from '../components/ai/DeepSeek.vue'
 </script>
 
 <template>
   <div class="home-view">
-    <h1>Hello from Home</h1>
-    <p>This will be the main page with logo, navigation, hero section, and system features introduction.</p>
+    <DeepSeek />
   </div>
 </template>
 
 <style scoped>
 .home-view {
-  padding: 20px;
-  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
 }
 </style>

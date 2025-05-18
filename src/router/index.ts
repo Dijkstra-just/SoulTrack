@@ -33,8 +33,30 @@ const router = createRouter({
       path: '/summary',
       name: 'summary',
       component: () => import('../views/SummaryView.vue'),
+      meta: { requiresAuth: true }, // 添加需要认证的元信息
     },
   ],
+})
+
+// 全局导航守卫
+router.beforeEach((to, from, next) => {
+  // 检查该路由是否需要登录权限
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    // 检查用户是否已登录
+    const token = localStorage.getItem('token')
+    const user = localStorage.getItem('user')
+    if (!token || !user) {
+      // 未登录，显示提示并跳转到首页
+      alert('请先登录后再访问此页面')
+      next({ path: '/' })
+    } else {
+      // 已登录，允许访问
+      next()
+    }
+  } else {
+    // 不需要登录权限的页面直接放行
+    next()
+  }
 })
 
 export default router
