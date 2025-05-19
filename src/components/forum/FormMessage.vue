@@ -314,6 +314,20 @@ if (messages.value.length === 0) {
 </script>
 
 <template>
+  <button
+    class="btn btn-circle btn-primary fixed top-48 right-8 shadow-lg z-50"
+    @click="showForm = true"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>
+  </button>
   <div class="container mx-auto px-4 py-8">
     <h1 class="text-4xl font-bold text-center mb-2">留言墙</h1>
     <p class="text-center text-gray-600 mb-8">请多留言，当然也留下你的信息。</p>
@@ -335,21 +349,6 @@ if (messages.value.length === 0) {
         景点评价
       </button>
     </div>
-
-    <button
-      class="btn btn-circle btn-primary fixed bottom-8 right-8 shadow-lg z-50"
-      @click="showForm = true"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-      </svg>
-    </button>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="flex flex-col items-center justify-center py-12">

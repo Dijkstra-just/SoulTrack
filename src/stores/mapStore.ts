@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import { ref } from 'vue'
 import axios from 'axios'
-
+import icon from '../assets/marker/icons8-地图针-48.png'
 export const useMapStore = defineStore('map', () => {
   // 地图相关状态
   let AMap = null as any
@@ -75,7 +75,7 @@ export const useMapStore = defineStore('map', () => {
 
           if (status === 'complete' && result.info === 'OK') {
             places.value = result.poiList.pois
-            // console.log('搜索结果:', result.poiList.pois)
+            console.log('搜索结果:', result.poiList.pois)
             resolve(result.poiList.pois)
           } else {
             console.error('搜索失败:', result)
@@ -170,9 +170,9 @@ export const useMapStore = defineStore('map', () => {
         map: map,
         position: [footprint.location.lng, footprint.location.lat],
         icon: new AMap.Icon({
-          size: new AMap.Size(25, 34),
-          image: 'https://webapi.amap.com/theme/v1.3/markers/n/mark_r.png',
-          imageSize: new AMap.Size(25, 34),
+          size: new AMap.Size(34, 34),
+          image: icon,
+          imageSize: new AMap.Size(34, 34),
         }),
         title: footprint.name,
       })

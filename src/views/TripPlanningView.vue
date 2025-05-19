@@ -1,22 +1,29 @@
 <template>
-  <div class="trip-planning-view">
-    <div class="part-1">
+  <div class="trip-planning-view bg-base-100">
+    <div class="part-1 card shadow-lg">
       <TripCard />
     </div>
 
-    <div class="part-2">
+    <div class="part-2 card shadow-lg">
       <TripInfo />
     </div>
 
-    <div class="part-3">
+    <div class="part-3 card shadow-lg">
       <GdMap />
     </div>
 
     <!-- 添加悬浮加号按钮 -->
-    <button class="floating-add-button" @click="handleAddButtonClick">
-      <span class="plus-icon">+</span>
+    <button class="btn btn-circle btn-primary floating-add-button" @click="handleAddButtonClick">
+      <span class="text-2xl font-bold">+</span>
     </button>
     <coze />
+
+    <!-- 添加行程模态框 -->
+    <AddTripModal
+      :show="showAddTripModal"
+      @close="showAddTripModal = false"
+      @tripAdded="handleTripAdded"
+    />
   </div>
 </template>
 
@@ -25,15 +32,26 @@ import GdMap from '../components/tripplan/GdMap.vue'
 import TripCard from '../components/tripplan/TripCard.vue'
 import TripInfo from '../components/tripplan/TripInfo.vue'
 import coze from '../components/ai/coze.vue'
-// import { useTripStore } from '../stores/tripStore'
+import AddTripModal from '../components/tripplan/AddTripModal.vue'
+import { ref } from 'vue'
+import { useTripStore } from '../stores/tripStore'
 
 // 使用trip store
-// const tripStore = useTripStore()
+const tripStore = useTripStore()
+
+// 添加行程模态框状态
+const showAddTripModal = ref(false)
 
 // 加号按钮点击事件处理函数
 const handleAddButtonClick = () => {
-  console.log('加号按钮被点击')
-  // 这里可以添加后续的事件处理逻辑，例如打开添加行程的表单
+  showAddTripModal.value = true
+}
+
+// 处理行程添加成功
+const handleTripAdded = (newTrip) => {
+  // 刷新行程数据
+  tripStore.switchTripType(newTrip.isPersonal ? 'my' : 'recommended')
+  tripStore.selectTrip(newTrip.id)
 }
 </script>
 
@@ -43,66 +61,42 @@ const handleAddButtonClick = () => {
   flex-direction: row;
   height: calc(100vh - 85px);
   position: relative; /* 添加相对定位，作为悬浮按钮的参考 */
-  background-color: var(--bg-color);
   color: var(--text-color);
+  gap: 0.5rem;
+  padding: 0.5rem;
 }
 
 .part-1 {
   width: 20%;
-  margin-left: 5px;
-  margin-right: 5px;
-  background-color: var(--card-bg);
-  border-radius: 8px;
-  padding: 0px;
-  box-shadow: var(--card-shadow);
+  border-radius: 0.5rem;
   overflow-y: auto;
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
+  background-color: var(--card-bg);
+  transition: all 0.3s ease;
 }
 
 .part-2 {
   width: 30%;
-  background-color: var(--card-bg);
-  border-radius: 8px;
-  padding: 5px;
-  box-shadow: var(--card-shadow);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
   overflow-y: auto;
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
+  background-color: var(--card-bg);
+  transition: all 0.3s ease;
 }
 
 .part-3 {
   width: 50%;
-  margin-left: 5px;
-  margin-right: 5px;
-  background-color: var(--card-bg);
-  border-radius: 20px;
-  box-shadow: var(--card-shadow);
+  border-radius: 1rem;
   overflow: hidden; /* 确保地图不会溢出容器 */
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
+  background-color: var(--card-bg);
+  transition: all 0.3s ease;
 }
 
 /* 悬浮加号按钮样式 */
 .floating-add-button {
   position: fixed;
-  bottom: 5px;
+  bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-  color: white;
-  border: none;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   z-index: 1000;
   transition: all 0.3s ease;
 }
@@ -114,11 +108,5 @@ const handleAddButtonClick = () => {
 
 .floating-add-button:active {
   transform: translateX(-50%) scale(0.95);
-}
-
-.plus-icon {
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 5px;
 }
 </style>

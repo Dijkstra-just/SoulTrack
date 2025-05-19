@@ -1,8 +1,11 @@
 <template>
   <div class="trip-container">
     <!-- 悬浮侧边栏 -->
-    <div class="trip-sidebar" :class="{ 'sidebar-expanded': isSidebarExpanded }">
-      <div class="sidebar-toggle" @click="toggleSidebar">
+    <div
+      class="trip-sidebar bg-base-200 shadow-lg"
+      :class="{ 'sidebar-expanded': isSidebarExpanded }"
+    >
+      <div class="sidebar-toggle btn btn-ghost btn-circle" @click="toggleSidebar">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -21,8 +24,8 @@
 
       <div class="sidebar-content">
         <div
-          class="sidebar-item"
-          :class="{ active: tripStore.tripType === 'recommended' }"
+          class="sidebar-item hover:bg-base-300"
+          :class="{ 'bg-primary text-primary-content': tripStore.tripType === 'recommended' }"
           @click="tripStore.switchTripType('recommended')"
         >
           <svg
@@ -43,8 +46,8 @@
           <span>推荐行程</span>
         </div>
         <div
-          class="sidebar-item"
-          :class="{ active: tripStore.tripType === 'my' }"
+          class="sidebar-item hover:bg-base-300"
+          :class="{ 'bg-primary text-primary-content': tripStore.tripType === 'my' }"
           @click="tripStore.switchTripType('my')"
         >
           <svg
@@ -66,23 +69,39 @@
       </div>
     </div>
 
-    <!-- 原有的行程卡片网格 -->
-    <div class="destination-grid">
+    <!-- 行程卡片网格 -->
+    <div class="grid gap-3 p-2 overflow-y-auto w-full">
       <div
         v-for="destination in tripStore.currentTrips"
         :key="destination.id"
-        class="destination-card"
+        class="card card-compact h-56 bg-base-200 shadow-md hover:shadow-lg transition-all cursor-pointer"
+        :class="{ 'ring-2 ring-primary': tripStore.selectedTrip?.id === destination.id }"
         @click="handleTripClick(destination.id)"
       >
-        <div class="destination-image">
-          <img :src="destination.image" :alt="destination.alt" />
-        </div>
-        <div class="destination-info">
-          <h4>{{ destination.title }}</h4>
-          <div class="trip-meta">
-            <span class="duration">{{ destination.duration }}</span>
-            <span class="divider">|</span>
-            <span class="spots">{{ destination.spots }}个地点</span>
+        <figure class="h-32 overflow-hidden">
+          <img :src="destination.image" :alt="destination.alt" class="w-full h-full object-cover" />
+        </figure>
+        <div class="card-body p-3">
+          <h4 class="card-title text-base">{{ destination.title }}</h4>
+          <div class="flex items-center text-sm justify-between">
+            <span class="opacity-70">{{ destination.duration }}</span>
+            <span class="flex items-center gap-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              {{ destination.spots }}个地点
+            </span>
           </div>
         </div>
       </div>
@@ -92,13 +111,22 @@
 
 <script setup lang="ts">
 import { useTripStore } from '../../stores/tripStore'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 // 使用trip store
 const tripStore = useTripStore()
 
 // 侧边栏展开状态
 const isSidebarExpanded = ref(false)
+
+// 在组件挂载时获取行程数据
+onMounted(async () => {
+  try {
+    await tripStore.fetchTrips()
+  } catch (error) {
+    console.error('获取行程数据失败:', error)
+  }
+})
 
 // 切换侧边栏展开状态
 const toggleSidebar = () => {

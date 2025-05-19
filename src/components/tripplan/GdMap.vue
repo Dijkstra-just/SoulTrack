@@ -1,13 +1,47 @@
 <template>
-  <div id="container"></div>
+  <div id="container">
+    <div class="map-controls">
+      <!-- <button @click="toggleNearbySearch" :class="{ active: nearbySearchEnabled }">
+        {{ nearbySearchEnabled ? '关闭附近搜索' : '开启附近搜索' }}
+      </button> -->
+      <input
+        type="checkbox"
+        value="synthwave"
+        class="toggle toggle-info"
+        @click="toggleNearbySearch"
+      />
+      <label for="synthwave">附近推荐</label>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted, watch, ref } from 'vue'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import { useTripStore } from '../../stores/tripStore'
 import type { Details } from '../../stores/tripStore'
+
+// 导入图标
+import sceneryIcon from '../../assets/marker/icons8-景观-48.png'
+import restaurantIcon from '../../assets/marker/icons8-餐厅--48.png'
+import museumIcon from '../../assets/marker/icons8-博物馆-48.png'
+import parkIcon from '../../assets/marker/icons8-主题公园-48.png'
+import pinIcon from '../../assets/marker/icons8-地图针-48.png'
+
 const tripStore = useTripStore()
+
+// 附近搜索相关变量
+const nearbySearchEnabled = ref(false)
+let nearbyMarkers = [] as any[] // 存储附近搜索的标记点
+
+// POI类型和对应的图标
+const poiTypes = {
+  风景名胜: sceneryIcon,
+  餐饮服务: restaurantIcon,
+  文化服务: museumIcon,
+  游乐园: parkIcon,
+  其他: pinIcon,
+}
 
 let map = null as any // 高德地图实例
 let AMap = null as any // 高德地图对象
@@ -39,7 +73,150 @@ const clearMapOverlays = () => {
       map.remove(polyline)
     })
     polylines = []
+
+    // 清除附近搜索的标记点
+    clearNearbyMarkers()
   }
+}
+
+// 清除附近搜索的标记点
+const clearNearbyMarkers = () => {
+  if (map) {
+    nearbyMarkers.forEach((marker) => {
+      map.remove(marker)
+    })
+    nearbyMarkers = []
+  }
+}
+
+// 切换附近搜索功能
+const toggleNearbySearch = () => {
+  nearbySearchEnabled.value = !nearbySearchEnabled.value
+
+  if (nearbySearchEnabled.value) {
+    // 如果启用了附近搜索，对当前显示的每个景点进行搜索
+    searchNearbyPOIs()
+  } else {
+    // 如果禁用了附近搜索，清除所有附近搜索的标记点
+    clearNearbyMarkers()
+  }
+}
+
+// 搜索附近的POI
+const searchNearbyPOIs = () => {
+  if (!map || !AMap || !tripStore.selectedTrip || !tripStore.selectedTrip.details) return
+
+  const details = tripStore.selectedTrip.details as Details
+  const days = details.address || []
+
+  if (days.length === 0) return
+
+  // 判断当前是否为总览模式
+  const isOverview = tripStore.activeTab === 'overview'
+
+  // 遍历每一天的景点
+  days.forEach((day, dayIndex) => {
+    if (!day || !Array.isArray(day) || day.length === 0) return
+
+    // 如果不是总览模式且不是当前选中的天数，则跳过
+    if (!isOverview && tripStore.activeTab !== `day${dayIndex + 1}`) {
+      return
+    }
+
+    const daySpots = day.filter((spot) => spot && spot.lanlat && spot.lanlat.length === 2)
+
+    if (daySpots.length === 0) return
+
+    // 对每个景点进行附近搜索
+    daySpots.forEach((spot) => {
+      const center = new AMap.LngLat(spot.lanlat[0], spot.lanlat[1])
+      const radius = 3000 // 搜索半径，单位：米
+
+      // 创建PlaceSearch实例
+      const placeSearch = new AMap.PlaceSearch({
+        pageSize: 10,
+        pageIndex: 1,
+        extensions: 'all',
+      })
+
+      // 搜索风景名胜
+      placeSearch.searchNearBy('风景名胜', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '风景名胜')
+        }
+      })
+
+      // 搜索餐饮服务
+      placeSearch.searchNearBy('餐饮', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '餐饮服务')
+        }
+      })
+
+      // 搜索文化服务
+      placeSearch.searchNearBy('博物馆 展览馆', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '文化服务')
+        }
+      })
+
+      // 搜索游乐园
+      placeSearch.searchNearBy('游乐园', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '游乐园')
+        }
+      })
+    })
+  })
+}
+
+// 添加附近搜索的标记点
+const addNearbyMarkers = (pois, type) => {
+  if (!pois || !Array.isArray(pois) || pois.length === 0) return
+
+  pois.forEach((poi) => {
+    if (!poi.location) return
+
+    // 创建标记
+    const position = new AMap.LngLat(poi.location.lng, poi.location.lat)
+
+    // 获取对应类型的图标
+    const iconPath = poiTypes[type] || poiTypes['其他']
+
+    // 创建标记
+    const marker = new AMap.Marker({
+      position,
+      title: poi.name,
+      icon: new AMap.Icon({
+        size: new AMap.Size(24, 24),
+        image: iconPath,
+        imageSize: new AMap.Size(24, 24),
+      }),
+      offset: new AMap.Pixel(-12, -12),
+    })
+
+    // 创建信息窗体
+    const infoWindow = new AMap.InfoWindow({
+      content: `
+        <div style="padding: 10px;">
+          <h3>${poi.name}</h3>
+          <p>地址: ${poi.address || '暂无地址'}</p>
+          <p>电话: ${poi.tel || '暂无电话'}</p>
+          <p>类型: ${type}</p>
+          <p>距离: ${poi.distance}米</p>
+        </div>
+      `,
+      offset: new AMap.Pixel(0, -30),
+    })
+
+    // 点击标记时显示信息窗体
+    marker.on('click', () => {
+      infoWindow.open(map, marker.getPosition())
+    })
+
+    nearbyMarkers.push(marker)
+    map.add(marker)
+  })
 }
 
 // 绘制行程路线
@@ -218,7 +395,7 @@ onMounted(() => {
   AMapLoader.load({
     key: 'a616248301c4b1c75d266f578e4de415', // Your developer key
     version: '2.0', // The version of the JSAPI
-    plugins: ['AMap.Scale', 'AMap.Driving', 'AMap.InfoWindow'], // 添加需要的插件
+    plugins: ['AMap.Scale', 'AMap.Driving', 'AMap.InfoWindow', 'AMap.PlaceSearch'], // 添加需要的插件
   })
     .then((loadedAMap) => {
       AMap = loadedAMap
@@ -250,6 +427,12 @@ watch(
   () => {
     if (map && AMap) {
       drawTripRoute()
+
+      // 如果附近搜索功能已启用，重新执行搜索
+      if (nearbySearchEnabled.value) {
+        clearNearbyMarkers() // 先清除现有的标记
+        searchNearbyPOIs() // 重新搜索
+      }
     }
   },
   { deep: true },
@@ -278,5 +461,34 @@ onUnmounted(() => {
   height: 100%;
   width: 100%;
   border-radius: 20px;
+  position: relative;
+}
+
+.map-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+}
+
+.map-controls button {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.map-controls button:hover {
+  background-color: #f5f5f5;
+}
+
+.map-controls button.active {
+  background-color: #2196f3;
+  color: white;
+  border-color: #2196f3;
 }
 </style>

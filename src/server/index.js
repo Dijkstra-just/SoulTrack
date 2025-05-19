@@ -3,6 +3,7 @@ import cors from 'cors'
 import connectDB from './db/index.js'
 import messagesRoutes from './routes/messages.js'
 import footprintsRoutes from './routes/footprints.js'
+import tripsRoutes from './routes/trips.js'
 import dotenv from 'dotenv'
 import authRoutes from './routes/authRoutes.js'
 
@@ -20,6 +21,7 @@ app.use(express.json())
 // Routes
 app.use('/api/messages', messagesRoutes)
 app.use('/api/footprints', footprintsRoutes)
+app.use('/api/trips', tripsRoutes)
 app.use('/api/auth', authRoutes)
 // Health check route
 app.get('/api/health', (req, res) => {

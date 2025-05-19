@@ -1,14 +1,16 @@
 <template>
-  <div class="trip-info">
+  <div class="trip-info p-2">
     <div v-if="tripStore.selectedTrip" class="trip-details">
-      <h2 class="trip-title">{{ tripStore.selectedTrip.title }}</h2>
-      <div class="trip-duration">{{ tripStore.selectedTrip.duration }} ></div>
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-xl font-bold">{{ tripStore.selectedTrip.title }}</h2>
+        <div class="badge badge-primary">{{ tripStore.selectedTrip.duration }}</div>
+      </div>
 
       <!-- 日期标签导航 -->
-      <div class="day-tabs">
+      <div class="tabs tabs-boxed mb-4">
         <div
           class="tab"
-          :class="{ active: tripStore.activeTab === 'overview' }"
+          :class="{ 'tab-active': tripStore.activeTab === 'overview' }"
           @click="tripStore.switchActiveTab('overview')"
         >
           总览
@@ -17,12 +19,12 @@
           v-for="(day, index) in tripStore.selectedTrip.details?.address"
           :key="index"
           class="tab"
-          :class="{ active: tripStore.activeTab === `day${index + 1}` }"
+          :class="{ 'tab-active': tripStore.activeTab === `day${index + 1}` }"
           @click="tripStore.switchActiveTab(`day${index + 1}`)"
         >
           DAY {{ index + 1 }}
         </div>
-        <div class="tab edit-tab">
+        <div class="tab">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -42,35 +44,29 @@
       <!-- 总览内容 -->
       <div v-if="tripStore.activeTab === 'overview'" class="overview-content">
         <!-- 总览中显示所有天的行程简略信息 -->
-        <div v-if="tripStore.selectedTrip.details" class="all-days-overview">
+        <div v-if="tripStore.selectedTrip.details" class="space-y-4">
           <div
             v-for="(day, dayIndex) in tripStore.selectedTrip.details.address"
             :key="dayIndex"
-            class="day-overview"
+            class="card bg-base-300 shadow-sm hover:shadow cursor-pointer"
             @click="tripStore.switchActiveTab(`day${dayIndex + 1}`)"
           >
-            <h3 class="day-title">DAY {{ dayIndex + 1 }}</h3>
-            <div class="day-location">{{ tripStore.selectedTrip.alt }}地区</div>
-            <div class="day-spots">
-              <span v-for="(spot, spotIndex) in day" :key="spotIndex">
-                {{ spot.name || '景点' + spot.id }}
-                <span v-if="spotIndex < day.length - 1" class="spot-separator">·</span>
-              </span>
-            </div>
-            <div class="day-arrow">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
+            <div class="card-body p-3">
+              <div class="flex justify-between items-center">
+                <h3 class="card-title text-base">DAY {{ dayIndex + 1 }}</h3>
+              </div>
+              <div class="divider my-1"></div>
+              <div class="space-y-2">
+                <div
+                  v-for="(spot, spotIndex) in day"
+                  :key="spotIndex"
+                  class="flex items-center gap-2"
+                >
+                  <div class="badge badge-primary">{{ spotIndex + 1 }}</div>
+                  <div class="font-medium">{{ spot.name }}</div>
+                </div>
+                <div v-if="day.length === 0" class="text-sm opacity-70 italic">暂无景点</div>
+              </div>
             </div>
           </div>
         </div>
@@ -95,58 +91,85 @@
         </div>
       </div>
 
-      <!-- 每天的详细内容 -->
+      <!-- 特定日期内容 -->
       <div
         v-for="(day, dayIndex) in tripStore.selectedTrip.details?.address"
         :key="dayIndex"
         v-show="tripStore.activeTab === `day${dayIndex + 1}`"
         class="day-content"
       >
-        <h3 class="day-title">DAY {{ dayIndex + 1 }} <span class="add-note">添加备注</span></h3>
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="text-lg font-bold">
+            DAY {{ dayIndex + 1 }}
+            <span class="text-sm font-normal text-primary ml-2 cursor-pointer">添加备注</span>
+          </h3>
+        </div>
 
-        <div class="spots-list">
-          <div v-for="(spot, spotIndex) in day" :key="spot.id" class="spot-item">
-            <div class="spot-icon">
-              <div class="icon-type">景点</div>
-              <img :src="spot.img" alt="景点图片" v-if="spot.img" />
-            </div>
-
-            <div class="spot-details">
-              <h4 class="spot-name">{{ spot.name || '景点' + spot.id }}</h4>
-              <div class="spot-info">
-                <div class="spot-price">门票 {{ spot.price }}</div>
-                <div class="spot-time">{{ spot.time }}</div>
-              </div>
-              <p class="spot-desc">{{ spot.desc }}</p>
-
-              <div class="spot-distance" v-if="spotIndex < day.length - 1">
-                <div class="distance-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                </div>
-                <span
-                  >{{ Math.floor(Math.random() * 5) + 1 }}km |
-                  {{ Math.floor(Math.random() * 20) + 5 }}min</span
+        <div class="space-y-2">
+          <div
+            v-for="(spot, spotIndex) in day"
+            :key="spot.id"
+            class="card bg-base-300 shadow-sm hover:shadow-md cursor-pointer transition-all"
+          >
+            <div class="card-body p-3">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 rounded-lg overflow-hidden bg-primary flex items-center justify-center text-white relative"
                 >
+                  <div class="absolute top-0 left-0 w-full bg-black/50 text-xs py-0.5 text-center">
+                    景点
+                  </div>
+                  <img
+                    :src="spot.img"
+                    alt="景点图片"
+                    v-if="spot.img"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-medium">{{ spot.name || '景点' + spot.id }}</h4>
+                  <div class="flex gap-3 text-xs opacity-80">
+                    <div>门票 {{ spot.price }}</div>
+                    <div>{{ spot.time }}</div>
+                  </div>
+                  <p class="text-sm mt-1">{{ spot.desc }}</p>
+
+                  <div
+                    v-if="spotIndex < day.length - 1"
+                    class="flex items-center gap-1 text-xs opacity-70 mt-2 pt-2 border-t border-dashed border-base-content/20"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span
+                      >{{ Math.floor(Math.random() * 5) + 1 }}km |
+                      {{ Math.floor(Math.random() * 20) + 5 }}min</span
+                    >
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="add-spot">
-            <div class="add-icon">+</div>
-            <span>添加地点/活动</span>
+          <div
+            class="card bg-base-200 shadow-sm hover:shadow-md cursor-pointer transition-all"
+            @click="openAddSpotModal(dayIndex)"
+          >
+            <div class="card-body p-3 flex flex-row items-center justify-center">
+              <div class="btn btn-circle btn-sm btn-ghost mr-2">+</div>
+              <div class="font-medium">添加地点/活动</div>
+            </div>
           </div>
         </div>
       </div>
@@ -155,14 +178,48 @@
     <div v-else class="no-trip-selected">
       <p>请从左侧选择一个行程查看详情</p>
     </div>
+
+    <!-- 添加地点模态框 -->
+    <AddSpotModal
+      :show="showAddSpotModal"
+      :tripId="tripStore.selectedTrip?.id"
+      :dayIndex="currentDayIndex"
+      @close="showAddSpotModal = false"
+      @spotAdded="handleSpotAdded"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useTripStore } from '../../stores/tripStore'
+import { ref } from 'vue'
+import AddSpotModal from './AddSpotModal.vue'
 
 // 使用trip store
 const tripStore = useTripStore()
+
+// 添加地点模态框状态
+const showAddSpotModal = ref(false)
+const currentDayIndex = ref(0)
+
+// 打开添加地点模态框
+const openAddSpotModal = (dayIndex: number) => {
+  currentDayIndex.value = dayIndex
+  showAddSpotModal.value = true
+}
+
+// 处理地点添加成功
+const handleSpotAdded = async (newSpot: any) => {
+  try {
+    if (tripStore.selectedTrip && currentDayIndex.value !== undefined) {
+      // 使用tripStore的addSpotToTrip方法添加地点到数据库
+      await tripStore.addSpotToTrip(tripStore.selectedTrip.id, currentDayIndex.value, newSpot)
+    }
+  } catch (error) {
+    console.error('添加地点失败:', error)
+    alert('添加地点失败，请重试')
+  }
+}
 </script>
 
 <style scoped>
@@ -170,7 +227,7 @@ const tripStore = useTripStore()
   height: 100%;
   padding: 1rem;
   overflow-y: auto;
-  background-color: var(--bg-color);
+  background-color: var(---card-bg);
 }
 
 .trip-details {
@@ -201,7 +258,9 @@ const tripStore = useTripStore()
   overflow-x: auto;
   padding-bottom: 0.5rem;
 }
-
+.tabs {
+  background-color: --card-bg;
+}
 .tab {
   padding: 0.5rem 1rem;
   border-radius: 20px;
