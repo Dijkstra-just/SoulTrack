@@ -31,6 +31,10 @@ const FootprintSchema = new mongoose.Schema({
     required: true,
     default: '1', // 默认用户ID，实际应用中应该从认证系统获取
   },
+  pname: { type: String, required: true },
+  cityname: { type: String, required: true },
+  adname: { type: String, required: true },
+  type: { type: String, required: true },
   createdAt: {
     type: Date,
     default: Date.now,

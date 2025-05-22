@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import { ref } from 'vue'
 import axios from 'axios'
-import icon from '../assets/marker/icons8-地图针-48.png'
+import icon from '../assets/marker/map.png'
 export const useMapStore = defineStore('map', () => {
   // 地图相关状态
   let AMap = null as any
@@ -15,7 +15,7 @@ export const useMapStore = defineStore('map', () => {
   let marker = null as any
   const footprints = ref<any[]>([])
   const footprintMarkers = ref<any[]>([])
-
+  let isMapInitialized = false
   // 初始化地图
   const initMap = async () => {
     ;(window as any)._AMapSecurityConfig = {
@@ -37,6 +37,7 @@ export const useMapStore = defineStore('map', () => {
       })
 
       AMap = loadedAMap
+      isMapInitialized = true
     } catch (e) {
       console.error('AMap failed to load:', e)
     }
@@ -75,7 +76,7 @@ export const useMapStore = defineStore('map', () => {
 
           if (status === 'complete' && result.info === 'OK') {
             places.value = result.poiList.pois
-            console.log('搜索结果:', result.poiList.pois)
+            // console.log('搜索结果:', result.poiList.pois)
             resolve(result.poiList.pois)
           } else {
             console.error('搜索失败:', result)
@@ -113,7 +114,7 @@ export const useMapStore = defineStore('map', () => {
         params: { userId: '1' }, // 默认用户ID
       })
       footprints.value = response.data
-      showFootprintsOnMap()
+      // showFootprintsOnMap()
     } catch (error) {
       console.error('获取足迹失败:', error)
     }
@@ -191,6 +192,7 @@ export const useMapStore = defineStore('map', () => {
     isLoading,
     selectedPlace,
     footprints,
+    isMapInitialized,
     initMap,
     initMapInstance,
     searchPlaces,

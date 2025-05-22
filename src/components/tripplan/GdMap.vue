@@ -22,11 +22,20 @@ import { useTripStore } from '../../stores/tripStore'
 import type { Details } from '../../stores/tripStore'
 
 // 导入图标
-import sceneryIcon from '../../assets/marker/icons8-景观-48.png'
-import restaurantIcon from '../../assets/marker/icons8-餐厅--48.png'
-import museumIcon from '../../assets/marker/icons8-博物馆-48.png'
-import parkIcon from '../../assets/marker/icons8-主题公园-48.png'
-import pinIcon from '../../assets/marker/icons8-地图针-48.png'
+import sceneryIcon from '../../assets/marker/jingdian.png'
+import zhongcantingIcon from '../../assets/marker/zhongcanting.png'
+import museumIcon from '../../assets/marker/bowuguan.png'
+import parkIcon from '../../assets/marker/gongyuan.png'
+import pinIcon from '../../assets/marker/map.png'
+import kuaicanIcon from '../../assets/marker/kuaican.png'
+import teaIcon from '../../assets/marker/tea.png'
+import kafeiIcon from '../../assets/marker/kafei.png'
+import wcIcon from '../../assets/marker/wc.png'
+import dianyingyuanIcon from '../../assets/marker/dianyingyuan.png'
+import tiyuIcon from '../../assets/marker/tiyu.png'
+import naichaIcon from '../../assets/marker/naicha.png'
+import jiubaIcon from '../../assets/marker/jiuba.png'
+import jiudianIcon from '../../assets/marker/jiudian.png'
 
 const tripStore = useTripStore()
 
@@ -37,9 +46,18 @@ let nearbyMarkers = [] as any[] // 存储附近搜索的标记点
 // POI类型和对应的图标
 const poiTypes = {
   风景名胜: sceneryIcon,
-  餐饮服务: restaurantIcon,
-  文化服务: museumIcon,
-  游乐园: parkIcon,
+  中餐厅: zhongcantingIcon,
+  博物馆: museumIcon,
+  公园: parkIcon,
+  快餐厅: kuaicanIcon,
+  茶艺馆: teaIcon,
+  咖啡厅: kafeiIcon,
+  厕所: wcIcon,
+  电影院: dianyingyuanIcon,
+  运动场馆: tiyuIcon,
+  冷饮店: naichaIcon,
+  酒吧: jiubaIcon,
+  住宿服务: jiudianIcon,
   其他: pinIcon,
 }
 
@@ -134,7 +152,7 @@ const searchNearbyPOIs = () => {
 
       // 创建PlaceSearch实例
       const placeSearch = new AMap.PlaceSearch({
-        pageSize: 10,
+        pageSize: 3,
         pageIndex: 1,
         extensions: 'all',
       })
@@ -147,23 +165,70 @@ const searchNearbyPOIs = () => {
       })
 
       // 搜索餐饮服务
-      placeSearch.searchNearBy('餐饮', center, radius, (status, result) => {
+      placeSearch.searchNearBy('中餐厅', center, radius, (status, result) => {
         if (status === 'complete' && result.poiList && result.poiList.pois) {
-          addNearbyMarkers(result.poiList.pois, '餐饮服务')
+          addNearbyMarkers(result.poiList.pois, '中餐厅')
         }
       })
 
       // 搜索文化服务
-      placeSearch.searchNearBy('博物馆 展览馆', center, radius, (status, result) => {
+      placeSearch.searchNearBy(
+        '博物馆|展览馆|美术馆|图书馆|科技馆|天文馆|文化宫|档案馆',
+        center,
+        radius,
+        (status, result) => {
+          if (status === 'complete' && result.poiList && result.poiList.pois) {
+            addNearbyMarkers(result.poiList.pois, '博物馆')
+          }
+        },
+      )
+
+      // 搜索游乐园
+      placeSearch.searchNearBy('公园', center, radius, (status, result) => {
         if (status === 'complete' && result.poiList && result.poiList.pois) {
-          addNearbyMarkers(result.poiList.pois, '文化服务')
+          addNearbyMarkers(result.poiList.pois, '公园')
         }
       })
 
-      // 搜索游乐园
-      placeSearch.searchNearBy('游乐园', center, radius, (status, result) => {
+      placeSearch.searchNearBy('冷饮店|糕饼店|甜品店', center, radius, (status, result) => {
         if (status === 'complete' && result.poiList && result.poiList.pois) {
-          addNearbyMarkers(result.poiList.pois, '游乐园')
+          addNearbyMarkers(result.poiList.pois, '冷饮店')
+        }
+      })
+
+      placeSearch.searchNearBy('酒吧', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '酒吧')
+        }
+      })
+      placeSearch.searchNearBy('咖啡厅', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '咖啡厅')
+        }
+      })
+      placeSearch.searchNearBy('电影院', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '电影院')
+        }
+      })
+      placeSearch.searchNearBy('运动场馆', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '运动场馆')
+        }
+      })
+      placeSearch.searchNearBy('住宿服务', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '住宿服务')
+        }
+      })
+      placeSearch.searchNearBy('公共厕所', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '厕所')
+        }
+      })
+      placeSearch.searchNearBy('茶艺馆', center, radius, (status, result) => {
+        if (status === 'complete' && result.poiList && result.poiList.pois) {
+          addNearbyMarkers(result.poiList.pois, '茶艺馆')
         }
       })
     })

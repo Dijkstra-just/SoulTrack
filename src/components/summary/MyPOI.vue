@@ -124,11 +124,11 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useMapStore } from '../../stores/mapStore'
+import { useEchartMapStore } from '../../stores/echartMapStore'
 import { useDebounceFn } from '@vueuse/core'
 
 // 使用地图状态管理
-const mapStore = useMapStore()
+const mapStore = useEchartMapStore()
 
 // 通知状态
 const notification = ref({
@@ -154,7 +154,9 @@ function showNotification(message: string, type: 'success' | 'error' = 'success'
 // 防抖处理搜索请求
 const debouncedSearch = useDebounceFn(() => {
   if (mapStore.searchText.trim()) {
-    mapStore.searchPlaces(mapStore.searchText)
+    mapStore.searchPlaces(mapStore.searchText).then(() => {
+      console.log(mapStore.places)
+    })
   } else {
     mapStore.places = []
   }

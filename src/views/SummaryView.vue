@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MyPOI from '../components/summary/MyPOI.vue'
-import MyMap from '../components/summary/MyMap.vue'
-import MyFootprints from '../components/summary/MyFootprints.vue'
+import EchartsMap from '../components/summary/EchartsMap.vue'
+import StatisticsCards from '../components/summary/StatisticsCards.vue'
 import { ref, provide } from 'vue'
 
 // 创建地图组件引用
@@ -14,12 +14,14 @@ provide('mapComponent', mapRef)
 <template>
   <div class="summary-view">
     <div class="map-container">
-      <MyMap ref="mapRef" />
+      <EchartsMap ref="mapRef" />
     </div>
 
-    <div class="poi-container">
-      <MyPOI />
-      <MyFootprints />
+    <div class="content-container">
+      <!-- 统计卡片 -->
+      <div class="statistics-container">
+        <StatisticsCards />
+      </div>
     </div>
   </div>
 </template>
@@ -29,25 +31,33 @@ provide('mapComponent', mapRef)
   display: flex;
   flex-direction: row;
   height: calc(100vh - 125px);
-  position: relative; /* 添加相对定位，作为悬浮按钮的参考 */
+  position: relative;
   background-color: var(--bg-color);
   color: var(--text-color);
+  padding: 0 10px;
 }
 
 .map-container {
-  height: calc(100vh - 165px);
+  height: calc(100vh - 145px);
   width: 50%;
-  margin: 20px 10px 20px 20px;
+  margin: 10px;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.poi-container {
+.content-container {
   width: 50%;
-  margin: 20px 20px 20px 0;
+  margin: 10px;
   display: flex;
   flex-direction: column;
-  /* height: calc(100vh - 165px); */
+}
+
+.statistics-container {
+  background-color: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  overflow-y: auto;
 }
 </style>

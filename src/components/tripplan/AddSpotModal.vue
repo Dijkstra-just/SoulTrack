@@ -86,9 +86,9 @@ const placePrice = ref('')
 const placeDesc = ref('')
 
 // 初始化地图API
-// if (!mapStore.isMapInitialized) {
-//   mapStore.initMap()
-// }
+if (!mapStore.isMapInitialized) {
+  mapStore.initMap()
+}
 
 // 搜索地点
 const searchPlaces = async () => {

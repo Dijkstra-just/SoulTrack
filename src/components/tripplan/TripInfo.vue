@@ -3,7 +3,27 @@
     <div v-if="tripStore.selectedTrip" class="trip-details">
       <div class="flex justify-between items-center mb-2">
         <h2 class="text-xl font-bold">{{ tripStore.selectedTrip.title }}</h2>
-        <div class="badge badge-primary">{{ tripStore.selectedTrip.duration }}</div>
+        <div class="flex items-center gap-2">
+          <div class="badge badge-primary">{{ tripStore.selectedTrip.duration }}</div>
+          <button class="btn btn-sm btn-error btn-outline" @click="confirmDeleteTrip">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            </svg>
+            删除行程
+          </button>
+        </div>
       </div>
 
       <!-- 日期标签导航 -->
@@ -24,7 +44,7 @@
         >
           DAY {{ index + 1 }}
         </div>
-        <div class="tab">
+        <div class="tab" @click="openEditTripModal">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -111,7 +131,66 @@
             :key="spot.id"
             class="card bg-base-300 shadow-sm hover:shadow-md cursor-pointer transition-all"
           >
-            <div class="card-body p-3">
+            <div class="card-body p-3 relative">
+              <div class="absolute top-2 right-2 flex gap-1">
+                <button
+                  class="btn btn-xs btn-circle btn-ghost"
+                  @click.stop="moveSpot(dayIndex, spotIndex, -1)"
+                  :disabled="spotIndex === 0"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="18 15 12 9 6 15"></polyline>
+                  </svg>
+                </button>
+                <button
+                  class="btn btn-xs btn-circle btn-ghost"
+                  @click.stop="moveSpot(dayIndex, spotIndex, 1)"
+                  :disabled="spotIndex === day.length - 1"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+                <button
+                  class="btn btn-xs btn-circle btn-error btn-ghost"
+                  @click.stop="confirmDeleteSpot(dayIndex, spotIndex)"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M18 6L6 18"></path>
+                    <path d="M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
               <div class="flex items-center gap-3">
                 <div
                   class="w-12 h-12 rounded-lg overflow-hidden bg-primary flex items-center justify-center text-white relative"
@@ -187,6 +266,38 @@
       @close="showAddSpotModal = false"
       @spotAdded="handleSpotAdded"
     />
+
+    <!-- 确认删除行程模态框 -->
+    <div class="modal" :class="{ 'modal-open': showDeleteTripModal }">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">确认删除行程</h3>
+        <p class="py-4">您确定要删除整个行程吗？此操作无法撤销。</p>
+        <div class="modal-action">
+          <button class="btn" @click="showDeleteTripModal = false">取消</button>
+          <button class="btn btn-error" @click="deleteTrip">删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 确认删除景点模态框 -->
+    <div class="modal" :class="{ 'modal-open': showDeleteSpotModal }">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">确认删除景点</h3>
+        <p class="py-4">您确定要删除此景点吗？此操作无法撤销。</p>
+        <div class="modal-action">
+          <button class="btn" @click="showDeleteSpotModal = false">取消</button>
+          <button class="btn btn-error" @click="deleteSpot">删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 编辑行程模态框 -->
+    <EditTripModal
+      :show="showEditTripModal"
+      :trip="tripStore.selectedTrip"
+      @close="showEditTripModal = false"
+      @tripUpdated="handleTripUpdated"
+    />
   </div>
 </template>
 
@@ -194,6 +305,7 @@
 import { useTripStore } from '../../stores/tripStore'
 import { ref } from 'vue'
 import AddSpotModal from './AddSpotModal.vue'
+import EditTripModal from './EditTripModal.vue'
 
 // 使用trip store
 const tripStore = useTripStore()
@@ -201,6 +313,17 @@ const tripStore = useTripStore()
 // 添加地点模态框状态
 const showAddSpotModal = ref(false)
 const currentDayIndex = ref(0)
+
+// 删除行程模态框状态
+const showDeleteTripModal = ref(false)
+
+// 删除景点模态框状态
+const showDeleteSpotModal = ref(false)
+const spotToDeleteIndex = ref(-1)
+const dayToDeleteFrom = ref(-1)
+
+// 编辑行程模态框状态
+const showEditTripModal = ref(false)
 
 // 打开添加地点模态框
 const openAddSpotModal = (dayIndex: number) => {
@@ -220,6 +343,118 @@ const handleSpotAdded = async (newSpot: any) => {
     alert('添加地点失败，请重试')
   }
 }
+
+// 确认删除行程
+const confirmDeleteTrip = () => {
+  showDeleteTripModal.value = true
+}
+
+// 删除行程
+const deleteTrip = async () => {
+  try {
+    if (tripStore.selectedTrip) {
+      const isPersonal = tripStore.tripType === 'my'
+      await tripStore.deleteTrip(tripStore.selectedTrip.id, isPersonal)
+      showDeleteTripModal.value = false
+    }
+  } catch (error) {
+    console.error('删除行程失败:', error)
+    alert('删除行程失败，请重试')
+  }
+}
+
+// 确认删除景点
+const confirmDeleteSpot = (dayIndex: number, spotIndex: number) => {
+  dayToDeleteFrom.value = dayIndex
+  spotToDeleteIndex.value = spotIndex
+  showDeleteSpotModal.value = true
+}
+
+// 删除景点
+const deleteSpot = async () => {
+  try {
+    if (tripStore.selectedTrip && dayToDeleteFrom.value >= 0 && spotToDeleteIndex.value >= 0) {
+      const tripId = tripStore.selectedTrip.id
+      const dayIndex = dayToDeleteFrom.value
+      const spotIndex = spotToDeleteIndex.value
+
+      // 获取当前行程的副本
+      const updatedTrip = JSON.parse(JSON.stringify(tripStore.selectedTrip))
+
+      // 从行程中删除指定的景点
+      updatedTrip.details.address[dayIndex].splice(spotIndex, 1)
+
+      // 更新行程
+      const isPersonal = tripStore.tripType === 'my'
+      await tripStore.updateTrip(updatedTrip, isPersonal)
+
+      // 强制更新视图
+      tripStore.selectedTrip = JSON.parse(JSON.stringify(updatedTrip))
+
+      showDeleteSpotModal.value = false
+      dayToDeleteFrom.value = -1
+      spotToDeleteIndex.value = -1
+    }
+  } catch (error) {
+    console.error('删除景点失败:', error)
+    alert('删除景点失败，请重试')
+  }
+}
+
+// 移动景点位置（上移或下移）
+const moveSpot = async (dayIndex: number, spotIndex: number, direction: number) => {
+  try {
+    if (!tripStore.selectedTrip) return
+
+    const newIndex = spotIndex + direction
+    if (newIndex < 0 || newIndex >= tripStore.selectedTrip.details.address[dayIndex].length) return
+
+    // 获取当前行程的副本
+    const updatedTrip = JSON.parse(JSON.stringify(tripStore.selectedTrip))
+
+    // 交换景点位置
+    const spots = updatedTrip.details.address[dayIndex]
+    const temp = spots[spotIndex]
+    spots[spotIndex] = spots[newIndex]
+    spots[newIndex] = temp
+
+    // 更新行程
+    const isPersonal = tripStore.tripType === 'my'
+    await tripStore.updateTrip(updatedTrip, isPersonal)
+
+    // 强制更新视图
+    tripStore.selectedTrip = JSON.parse(JSON.stringify(updatedTrip))
+  } catch (error) {
+    console.error('移动景点失败:', error)
+    alert('移动景点失败，请重试')
+  }
+}
+
+// 打开编辑行程模态框
+const openEditTripModal = () => {
+  if (tripStore.selectedTrip) {
+    showEditTripModal.value = true
+  }
+}
+
+// 处理行程更新
+const handleTripUpdated = async (updatedTrip) => {
+  try {
+    if (tripStore.selectedTrip) {
+      // 使用tripStore的updateTrip方法更新行程
+      const isPersonal = tripStore.tripType === 'my'
+      await tripStore.updateTrip(updatedTrip, isPersonal)
+
+      // 更新视图
+      tripStore.selectedTrip = JSON.parse(JSON.stringify(updatedTrip))
+    }
+  } catch (error) {
+    console.error('更新行程失败:', error)
+    alert('更新行程失败，请重试')
+  }
+}
+
+// 删除拖拽相关方法
 </script>
 
 <style scoped>

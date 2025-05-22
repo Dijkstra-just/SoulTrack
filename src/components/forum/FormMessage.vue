@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-
+import auth from '/user/jhd.jpg'
 // Message types
 type MessageType = 'companion' | 'review'
 type Tab = 'all' | MessageType
@@ -53,7 +53,7 @@ const newMessage = ref<Omit<Message, '_id' | 'createdAt' | 'likes' | 'comments'>
   tags: [],
   author: {
     name: 'Current User', // This would come from auth system
-    avatar: '/default-avatar.png', // Default avatar
+    avatar: auth, // Default avatar
   },
 })
 
@@ -146,7 +146,7 @@ const resetForm = () => {
     tags: [],
     author: {
       name: 'Current User',
-      avatar: '/default-avatar.png',
+      avatar: auth,
     },
   }
 }
@@ -198,7 +198,7 @@ const submitComment = async () => {
       content: newComment.value,
       author: {
         name: 'Current User',
-        avatar: '/default-avatar.png',
+        avatar: auth,
       },
     }
 
